@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de EMFA</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Gestión de EMFA</h1>
+        <div class="header-controls">
+            <button id="themeToggle" class="btn btn-theme" title="Cambiar tema (Ctrl+T)">
+                <i class="icon">🌙</i>
+                <span>Modo Oscuro</span>
+            </button>
+            <button id="shortcutsBtn" class="btn btn-info" title="Ver atajos de teclado">
+                <i class="icon">⌨️</i>
+                Atajos
+            </button>
+        </div>
+    </header>
+
+    <main>
+        <!-- Panel de archivo -->
+        <div class="file-section">
+            <div class="file-controls">
+                <label for="fileInput" class="btn btn-primary">
+                    <i class="icon">📁</i>
+                    Cargar archivo <!-- JSON -->
+                </label>
+                <input type="file" id="fileInput" accept=".json" style="display: none;">
+                <button id="createNewBtn" class="btn btn-secondary">
+                    <i class="icon">📄</i>
+                    Crear <!-- nuevo --> archivo
+                </button>
+                <button id="saveFileBtn" class="btn btn-success" disabled>
+                    <i class="icon">💾</i>
+                    Guardar archivo
+                </button>
+                <button id="saveAsBtn" class="btn btn-warning" disabled>
+                    <i class="icon">📥</i>
+                    Guardar como..
+                </button>
+                <button id="exportCsvBtn" class="btn btn-info" disabled>
+                    <i class="icon">📊</i>
+                    Exportar CSV
+                </button>
+                <label for="csvInput" class="btn btn-info">
+                    <i class="icon">📋</i>
+                    Importar CSV
+                </label>
+                <input type="file" id="csvInput" accept=".csv" style="display: none;">
+            </div>
+            <div id="fileInfo" class="file-info"></div>
+        </div>
+ 
+        <!-- Panel de operaciones -->
+        <div class="operations-section">
+            <div class="operation-buttons">
+                <button id="addBtn" class="btn btn-add" disabled>
+                    <i class="icon">➕</i>
+                    Añadir
+                </button>
+                <button id="modifyBtn" class="btn btn-modify" disabled>
+                    <i class="icon">✏️</i>
+                    Modificar
+                </button>
+                <button id="deleteBtn" class="btn btn-delete" disabled>
+                    <i class="icon">🗑️</i>
+                    Borrar
+                </button>
+                <button id="searchBtn" class="btn btn-search" disabled>
+                    <i class="icon">🔍</i>
+                    Buscar
+                </button>
+            </div>
+        </div>
+ 
+        <!-- Panel de formulario -->
+        <div id="formPanel" class="form-panel" style="display: none;">
+            <div class="form-header">
+                <h3 id="formTitle">Añadir Registro</h3>
+                <button id="closeFormBtn" class="btn-close">✖</button>
+            </div>
+            <form id="recordForm">
+                <div class="form-group form-row">
+                    <div class="form-col">
+                        <label for="jornada">Jornada:</label>
+                        <select id="jornada" name="jornada" required>
+                            <option value="">Seleccionar jornada...</option>
+                            <!-- Las opciones se cargarán dinámicamente -->
+                        </select>
+                        <small class="field-hint">Selecciona la jornada del partido</small>
+                    </div>
+                    <div class="form-col">
+                        <label for="fecha">Fecha:</label>
+                        <input type="date" id="fecha" name="fecha" required>
+                        <small class="field-hint">Fecha del partido</small>
+                    </div>
+                </div>
+                <div class="form-group form-row">
+                    <div class="form-col">
+                        <label for="ubicacion">Ubicación:</label>
+                        <input type="text" id="ubicacion" name="ubicacion" required maxlength="100" placeholder="Campo de fútbol, dirección...">
+                        <small class="field-hint">Máximo 100 caracteres</small>
+                    </div>
+                    <div class="form-col">
+                        <label for="arbitro">Árbitro:</label>
+                        <input type="text" id="arbitro" name="arbitro" required maxlength="100" placeholder="Nombre del árbitro">
+                        <small class="field-hint">Máximo 100 caracteres</small>
+                    </div>
+                </div>
+                <div class="form-group form-row">
+                    <div class="form-col">
+                        <label for="estado">Estado:</label>
+                        <select id="estado" name="estado" required>
+                            <option value="">Seleccionar estado</option>
+                            <option value="Ganado">Ganado</option>
+                            <option value="Empatado">Empatado</option>
+                            <option value="Perdido">Perdido</option>
+                        </select>
+                        <small class="field-hint">Resultado del partido</small>
+                    </div>
+                    <div class="form-col">
+                        <label for="resultado">Resultado:</label>
+                        <input type="text" id="resultado" name="resultado" maxlength="20" placeholder="ej: 2-1, 0-0, 3-2">
+                        <small class="field-hint">Marcador del partido (opcional)</small>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="descripcion">Descripción:</label>
+                    <textarea id="descripcion" name="descripcion" rows="4" required maxlength="500" placeholder="Describe los detalles del release..."></textarea>
+                    <small class="field-hint"><span id="charCount">0</span>/500 caracteres</small>
+                </div>
+                <div class="form-actions">
+                    <button type="submit" id="submitBtn" class="btn btn-primary">Guardar</button>
+                    <button type="button" id="cancelBtn" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Panel de búsqueda -->
+        <div id="searchPanel" class="search-panel" style="display: none;">
+            <div class="search-header">
+                <h3>Buscar Registros</h3>
+                <button id="closeSearchBtn" class="btn-close">✖</button>
+            </div>
+            <div class="search-form">
+                <div class="form-group">
+                    <label for="searchField">Buscar en:</label>
+                    <select id="searchField">
+                        <option value="all">Todos los campos</option>
+                        <option value="proyecto">Jornada</option>
+                        <option value="fecha">Fecha</option>
+                        <option value="ubicacion">Ubicación</option>
+                        <option value="arbitro">Árbitro</option>
+                        <option value="estado">Estado</option>
+                        <option value="resultado">Resultado</option>
+                        <option value="descripcion">Descripción</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="searchValue">Valor a buscar:</label>
+                    <input type="text" id="searchValue" placeholder="Introduce el valor a buscar">
+                </div>
+                <div class="search-actions">
+                    <button id="executeSearchBtn" class="btn btn-primary">Buscar</button>
+                    <button id="clearSearchBtn" class="btn btn-secondary">Limpiar</button>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- Panel de búsqueda para modificar -->
+        <div id="modifySearchPanel" class="search-panel" style="display: none;">
+            <div class="search-header">
+                <h3>Buscar por Estado para Modificar</h3>
+                <button id="closeModifySearchBtn" class="btn-close">✖</button>
+            </div>
+            <div class="search-form">
+                <div class="form-group">
+                    <label for="modifyEstadoValue">Estado a modificar:</label>
+                    <select id="modifyEstadoValue" required>
+                        <option value="">Seleccionar estado</option>
+                        <option value="Ganado">Ganado</option>
+                        <option value="Empatado">Empatado</option>
+                        <option value="Perdido">Perdido</option>
+                    </select>
+                </div>
+                <div class="search-actions">
+                    <button id="executeModifySearchBtn" class="btn btn-primary">Buscar</button>
+                    <button id="cancelModifySearchBtn" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- Panel de búsqueda para borrar -->
+        <div id="deleteSearchPanel" class="search-panel" style="display: none;">
+            <div class="search-header">
+                <h3>Buscar por Jornada para Borrar</h3>
+                <button id="closeDeleteSearchBtn" class="btn-close">✖</button>
+            </div>
+            <div class="search-form">
+                <div class="form-group">
+                    <label for="deleteJornadaValue">Jornada a borrar:</label>
+                    <select id="deleteJornadaValue" required>
+                        <option value="">Seleccionar jornada...</option>
+                        <!-- Las opciones se cargarán dinámicamente -->
+                    </select>
+                </div>
+                <div class="search-actions">
+                    <button id="executeDeleteSearchBtn" class="btn btn-primary">Buscar</button>
+                    <button id="cancelDeleteSearchBtn" class="btn btn-secondary">Cancelar</button>
+                </div>
+            </div>
+        </div>
+ 
+        <!-- Tabla de datos -->
+        <div class="table-section">
+            <div class="table-header">
+                <h3>Registros EMFA</h3>
+                <div class="table-controls">
+                    <div class="sort-controls">
+                        <label for="sortField">Ordenar por:</label>
+                        <select id="sortField">
+                            <option value="proyecto">Jornada</option>
+                            <option value="estado">Estado</option>
+                            <option value="fecha">Fecha</option>
+                        </select>
+                        <button id="sortOrder" class="btn btn-small" title="Cambiar orden">
+                            <i class="icon">🔽</i>
+                        </button>
+                    </div>
+                    <div class="pagination">
+                        <button id="prevPageBtn" class="btn btn-small" disabled>◀ Anterior</button>
+                        <span id="pageInfo">Página 1 de 1</span>
+                        <button id="nextPageBtn" class="btn btn-small" disabled>Siguiente ▶</button>
+                    </div>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="dataTable">
+                    <thead>
+                        <tr>
+                            <th>Jornada</th>
+                            <th>Fecha</th>
+                            <th>Ubicación</th>
+                            <th>Árbitro</th>
+                            <th>Estado</th>
+                            <th>Resultado</th>
+                            <th>Descripción</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        <!-- Los datos se cargarán aquí dinámicamente -->
+                    </tbody>
+                </table>
+            </div>
+            <div id="noDataMessage" class="no-data" style="display: none;">
+                <p>No hay datos para mostrar. Carga un archivo JSON o crea uno nuevo.</p>
+            </div>
+        </div>
+    </main>
+ 
+    <footer>
+        <p>Creado por AIMB</p>
+    </footer>
+ 
+    <!-- Modal de confirmación -->
+    <div id="confirmModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <h4>Confirmar acción</h4>
+            <p id="confirmMessage"></p>
+            <div class="modal-actions">
+                <button id="confirmYes" class="btn btn-danger">Sí</button>
+                <button id="confirmNo" class="btn btn-secondary">No</button>
+            </div>
+        </div>
+    </div>
+ 
+    <!-- Modal de atajos de teclado -->
+    <div id="shortcutsModal" class="modal" style="display: none;">
+        <div class="modal-content shortcuts-modal">
+            <div class="modal-header">
+                <h4>Atajos de Teclado</h4>
+                <button id="closeShortcutsBtn" class="btn-close">✖</button>
+            </div>
+            <div class="shortcuts-grid">
+                <div class="shortcut-item">
+                    <kbd>Ctrl + N</kbd>
+                    <span>Crear nuevo archivo</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + O</kbd>
+                    <span>Cargar archivo</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + S</kbd>
+                    <span>Guardar archivo</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + Shift + S</kbd>
+                    <span>Guardar como...</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + A</kbd>
+                    <span>Añadir registro</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + M</kbd>
+                    <span>Modificar registro</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + D</kbd>
+                    <span>Borrar registro</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + F</kbd>
+                    <span>Buscar registros</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + T</kbd>
+                    <span>Cambiar tema</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Ctrl + E</kbd>
+                    <span>Exportar CSV</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>Escape</kbd>
+                    <span>Cerrar panel/modal</span>
+                </div>
+                <div class="shortcut-item">
+                    <kbd>F1</kbd>
+                    <span>Mostrar atajos</span>
+                </div>
+            </div>
+        </div>
+    </div>
+ 
+    <script src="script.js"></script>
+</body>
+</html>
